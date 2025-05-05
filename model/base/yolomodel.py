@@ -77,10 +77,14 @@ class YoloModel(nn.Module):
         return self
 
     def freezeBackbone(self):
-        raise NotImplementedError("YoloModel::freezeBackbone")
+        #for param in self.backbone.parameters():
+        #    param.requires_grad = False
+        log.grey("Backbone is frozen.")
 
     def unfreezeBackbone(self):
-        raise NotImplementedError("YoloModel::unfreezeBackbone")
+        #for param in self.backbone.parameters():
+        #    param.requires_grad = True
+        log.grey("Backbone is unfrozen.")
 
     def forward(self, x):
         if self.inferenceMode:

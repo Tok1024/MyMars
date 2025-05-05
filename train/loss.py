@@ -26,8 +26,8 @@ class DFLoss(nn.Module):
         wl = tr - target  # weight left
         wr = 1 - wl  # weight right
         return (
-            F.cross_entropy(pred_dist, tl.view(-1), reduction="none").view(tl.shape) * wl
-            + F.cross_entropy(pred_dist, tr.view(-1), reduction="none").view(tl.shape) * wr
+                F.cross_entropy(pred_dist, tl.view(-1), reduction="none").view(tl.shape) * wl
+                + F.cross_entropy(pred_dist, tr.view(-1), reduction="none").view(tl.shape) * wr
         ).mean(-1, keepdim=True)
 
 
@@ -59,7 +59,7 @@ class BboxLoss(nn.Module):
 class DetectionLoss(object):
     def __init__(self, mcfg, model):
         self.model = model
-        self.mcfg= mcfg
+        self.mcfg = mcfg
         self.layerStrides = model.layerStrides
         self.assigner = TaskAlignedAssigner(topk=self.mcfg.talTopk, num_classes=self.mcfg.nc, alpha=0.5, beta=6.0)
         self.bce = nn.BCEWithLogitsLoss(reduction="none")
@@ -98,16 +98,46 @@ class DetectionLoss(object):
         no = self.mcfg.nc + self.mcfg.regMax * 4
 
         # predictioin preprocess
-        predBoxDistribution, predClassScores = torch.cat([xi.view(batchSize, no, -1) for xi in preds], 2).split((self.mcfg.regMax * 4, self.mcfg.nc), 1)
-        predBoxDistribution = predBoxDistribution.permute(0, 2, 1).contiguous() # (batchSize, 80 * 80 + 40 * 40 + 20 * 20, regMax * 4)
-        predClassScores = predClassScores.permute(0, 2, 1).contiguous() # (batchSize, 80 * 80 + 40 * 40 + 20 * 20, nc)
+        predBoxDistribution, predClassScores = torch.cat([xi.view(batchSize, no, -1) for xi in preds], 2).split(
+            (self.mcfg.regMax * 4, self.mcfg.nc), 1)
+        predBoxDistribution = predBoxDistribution.permute(0, 2,
+                                                          1).contiguous()  # (batchSize, 80 * 80 + 40 * 40 + 20 * 20, regMax * 4)
+        predClassScores = predClassScores.permute(0, 2, 1).contiguous()  # (batchSize, 80 * 80 + 40 * 40 + 20 * 20, nc)
 
         # ground truth preprocess
-        targets = self.preprocess(targets.to(self.mcfg.device), batchSize, scaleTensor=self.model.scaleTensor) # (batchSize, maxCount, 5)
+        targets = self.preprocess(targets.to(self.mcfg.device), batchSize,
+                                  scaleTensor=self.model.scaleTensor)  # (batchSize, maxCount, 5)
         gtLabels, gtBboxes = targets.split((1, 4), 2)  # cls=(batchSize, maxCount, 1), xyxy=(batchSize, maxCount, 4)
         gtMask = gtBboxes.sum(2, keepdim=True).gt_(0.0)
 
-        raise NotImplementedError("DetectionLoss::__call__")
+        # raise NotImplementedError("DetectionLoss::__call__")
+        # import pdb;pdb.set_trace()
+        anchor_points = self.model.anchorPoints
+        stride_tensor = self.model.anchorStrides
+        pred_bboxes = bboxDecode(anchor_points, predBoxDistribution, self.model.proj, xywh=False)
+
+        # 调用TaskAlignedAssigner分配目标
+        _, target_bboxes, target_scores, fg_mask, _ = self.assigner(
+            predClassScores.detach().sigmoid(),
+            (pred_bboxes.detach() * stride_tensor).type(gtBboxes.dtype),
+            anchor_points * stride_tensor,
+            gtLabels,
+            gtBboxes,
+            gtMask
+        )
+
+        # Cls.Loss
+        target_scores_sum = max(target_scores.sum(), 1)
+        loss[1] = self.bce(predClassScores, target_scores.to(predClassScores.dtype)).sum() / target_scores_sum
+
+        # Bbox.Loss
+        if fg_mask.sum():
+            target_bboxes /= stride_tensor
+
+            loss[0], loss[2] = self.bboxLoss(
+                predBoxDistribution, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum,
+                fg_mask
+            )
 
         loss[0] *= self.mcfg.lossWeights[0]  # box
         loss[1] *= self.mcfg.lossWeights[1]  # cls
