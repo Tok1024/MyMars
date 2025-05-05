@@ -23,6 +23,6 @@ if __name__ == "__main__":
         # cfgname="c1.nano.full.cuda@3",
         # cfgname="c1.nano.teacher",
         # cfgname="c1.nano.distillation",
-        root="/auto/mars", # 注意项目运行root不要放在代码路径下
+        root="D:/ML_Project/Mars", # 注意项目运行root不要放在代码路径下
         nobuf=nobuf,
     ).run()
