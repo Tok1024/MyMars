@@ -19,10 +19,10 @@ if __name__ == "__main__":
 
     MarsEngine(
         mode=mode,
-        cfgname="c1.nano.full",
+        #cfgname="c1.nano.full",
         # cfgname="c1.nano.full.cuda@3",
-        # cfgname="c1.nano.teacher",
-        # cfgname="c1.nano.distillation",
-        root="D:/ML_Project/Mars", # 注意项目运行root不要放在代码路径下
+        #cfgname="c1.nano.teacher",
+        cfgname="c1.nano.distillation",
+        root="/home/wly/szl_all_code/prml/MyMars_Outputs", # 注意项目运行root不要放在代码路径下
         nobuf=nobuf,
     ).run()

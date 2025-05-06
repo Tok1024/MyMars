@@ -8,20 +8,25 @@ def mcfg(tags):
     # pretrainedFile = os.path.join(projectRootDir, "resources/pretrained/backbone", "backbone_{}.pth".format(mcfg.phase))
     # mcfg.pretrainedBackboneUrl = "file://{}".format(pretrainedFile)
 
+    #TODO: modify the following paths
+    dateset_dir = "/home/wly/szl_all_code/my_datasets/mar20"
+    mcfg.root = "/home/wly/szl_all_code/prml/MyMars_Outputs"
+
+
     mcfg.phase = "nano" # DO NOT MODIFY
     mcfg.trainSplitName = "train" # DO NOT MODIFY
     mcfg.validationSplitName = "validation" # DO NOT MODIFY
     mcfg.testSplitName = "test" # DO NOT MODIFY
 
     # data setup
-    mcfg.imageDir = "D:/ML_Project/cvdata/mar20/images"
-    mcfg.annotationDir = "D:/ML_Project/cvdata/mar20/annotations"
+    mcfg.imageDir = f"{dateset_dir}/images"
+    mcfg.annotationDir = f"{dateset_dir}/annotations"
     mcfg.classList = ["A{}".format(x) for x in range(1, 21)] # DO NOT MODIFY
     mcfg.subsetMap = { # DO NOT MODIFY
-        "train": "D:/ML_Project/cvdata/mar20/splits/v5/train.txt",
-        "validation": "D:/ML_Project/cvdata/mar20/splits/v5/validation.txt",
-        "test": "D:/ML_Project/cvdata/mar20/splits/v5/test.txt",
-        "small": "D:/ML_Project/cvdata/mar20/splits/v5/small.txt",
+        "train": f"{dateset_dir}/splits/v5/train.txt",
+        "validation": f"{dateset_dir}/splits/v5/validation.txt",
+        "test": f"{dateset_dir}/splits/v5/test.txt",
+        "small": f"{dateset_dir}/splits/v5/small.txt",
     }
 
     if "full" in tags:
@@ -37,8 +42,8 @@ def mcfg(tags):
 
     if "distillation" in tags:
         mcfg.modelName = "distillation"
-        mcfg.checkpointModelFile = "/auto/mars/ame/c1.nano.teacher/__cache__/best_weights.pth"
-        mcfg.teacherModelFile = "/auto/mars/ame/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.checkpointModelFile = f"{mcfg.root}/Noire/c1.nano.full/__cache__/best_weights.pth"
+        mcfg.teacherModelFile = f"{mcfg.root}/Noire/c1.nano.full/__cache__/best_weights.pth"
         mcfg.distilLossWeights = (1.0, 0.05, 0.001)
         mcfg.maxEpoch = 100
         mcfg.backboneFreezeEpochs = [x for x in range(0, 25)]

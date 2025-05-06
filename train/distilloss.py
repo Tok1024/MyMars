@@ -1,15 +1,15 @@
 import torch
 from overrides import override # this could be removed since Python 3.12
-
+from train.loss import DetectionLoss, CWDLoss, ResponseLoss
 
 class DistillationDetectionLoss(object):
     def __init__(self, mcfg, model):
         self.mcfg = mcfg
         self.histMode = False
-        # self.detectionLoss = DetectionLoss(mcfg, model)
-        # self.cwdLoss = CWDLoss(self.mcfg.device)
-        # self.respLoss = ResponseLoss(self.mcfg.device, self.mcfg.nc, self.mcfg.teacherClassIndexes)
-        raise NotImplementedError("DistillationDetectionLoss::__init__")
+        self.detectionLoss = DetectionLoss(mcfg, model)
+        self.cwdLoss = CWDLoss(self.mcfg.device)
+        self.respLoss = ResponseLoss(self.mcfg.device, self.mcfg.nc, self.mcfg.teacherClassIndexes)
+        #raise NotImplementedError("DistillationDetectionLoss::__init__")
 
     @override
     def __call__(self, rawPreds, batch):

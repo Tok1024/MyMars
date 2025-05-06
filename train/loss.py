@@ -144,3 +144,20 @@ class DetectionLoss(object):
         loss[2] *= self.mcfg.lossWeights[2]  # dfl
 
         return loss.sum()
+
+class CWDLoss(nn.Module):
+    def __init__(self, mcfg):
+        self.mcfg = mcfg   
+        
+    def __call__(self, preds, targets):
+        return 0.0
+    
+class ResponseLoss(nn.Module):
+    def __init__(self, device, nc, teacherClassIndexes):
+        #ResponseLoss(self.mcfg.device, self.mcfg.nc, self.mcfg.teacherClassIndexes)
+        self.device = device
+        self.nc = nc
+        self.teacherClassIndexes = teacherClassIndexes
+        
+    def __call__(self, preds, targets):
+        return 0.0
