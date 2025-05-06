@@ -10,7 +10,7 @@ def mcfg(tags):
 
     #TODO: modify the following paths
     dateset_dir = "/home/wly/szl_all_code/my_datasets/mar20"
-    mcfg.root = "/home/wly/szl_all_code/prml/MyMars_Outputs"
+    mcfg.root = "/home/wly/szl_all_code/prml/MyMars_Outputs/wly"
 
 
     mcfg.phase = "nano" # DO NOT MODIFY
@@ -42,8 +42,8 @@ def mcfg(tags):
 
     if "distillation" in tags:
         mcfg.modelName = "distillation"
-        mcfg.checkpointModelFile = f"{mcfg.root}/wly/c1.nano.teacher/__cache__/best_weights.pth"
-        mcfg.teacherModelFile = f"{mcfg.root}/wly/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.checkpointModelFile = f"{mcfg.root}/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.teacherModelFile = f"{mcfg.root}/c1.nano.teacher/__cache__/best_weights.pth"
         mcfg.distilLossWeights = (1.0, 0.05, 0.001)
         mcfg.maxEpoch = 100
         mcfg.backboneFreezeEpochs = [x for x in range(0, 25)]

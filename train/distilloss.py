@@ -8,7 +8,7 @@ class DistillationDetectionLoss(object):
         self.histMode = False
         self.detectionLoss = DetectionLoss(mcfg, model)
         self.cwdLoss = CWDLoss(self.mcfg.device)
-        self.respLoss = ResponseLoss(self.mcfg.device, self.mcfg.nc, self.mcfg.teacherClassIndexes)
+        self.respLoss = ResponseLoss(self.mcfg.device, self.mcfg.nc, self.mcfg.teacherClassIndexes, temperature=2.1)
         #raise NotImplementedError("DistillationDetectionLoss::__init__")
 
     @override

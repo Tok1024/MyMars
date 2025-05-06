@@ -157,18 +157,18 @@ class CWDLoss(nn.Module):
             if s_f is None or t_f is None:
                 print(f"[CWDLoss] Warning: s_f or t_f is None at index {idx}")
                 continue
-            total_loss += F.mse_loss(s_f, t_f)
+            total_loss += F.mse_loss(s_f, t_f.detach())
             count += 1
         if count == 0:
             return torch.tensor(0.0, device=self.mcfg.device)
         return total_loss / count
     
 class ResponseLoss(nn.Module):
-    def __init__(self, device, nc, teacherClassIndexes):
-        #ResponseLoss(self.mcfg.device, self.mcfg.nc, self.mcfg.teacherClassIndexes)
+    def __init__(self, device, nc, teacherClassIndexes, temperature=2.0):
         self.device = device
-        self.nc = nc
+        self.nc = nc #总类别数
         self.teacherClassIndexes = teacherClassIndexes
+        self.T = temperature
         
     def __call__(self, sresponse, tresponse):
         total_loss = 0.0
@@ -182,7 +182,16 @@ class ResponseLoss(nn.Module):
             # 只对指定类别做蒸馏
             s_cls = s_cls[:, self.teacherClassIndexes, :, :]
             t_cls = t_cls[:, self.teacherClassIndexes, :, :]
-            total_loss += torch.nn.functional.mse_loss(s_cls, t_cls)
+            
+            B, _, H, W = s_cls.shape
+            s_logits = s_cls.permute(0, 2, 3, 1).reshape(-1, self.nc)
+            t_logits = t_cls.permute(0, 2, 3, 1).reshape(-1, self.nc)
+            
+            soft_students_log_probs = F.log_softmax(s_logits / self.T, dim=-1)
+            soft_teachers_probs = (t_logits.detach() / self.T).softmax(dim=-1)
+            kl_loss_pair = F.kl_div(soft_students_log_probs, soft_teachers_probs, reduction='batchmean') * (self.T * self.T)
+            
+            total_loss += kl_loss_pair
             count += 1
         if count == 0:
             return torch.tensor(0.0, device=self.device)
