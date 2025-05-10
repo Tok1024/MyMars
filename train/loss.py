@@ -144,3 +144,58 @@ class DetectionLoss(object):
         loss[2] *= self.mcfg.lossWeights[2]  # dfl
 
         return loss.sum()
+
+class CWDLoss(nn.Module):
+    def __init__(self, mcfg):
+        self.mcfg = mcfg   
+        
+    def __call__(self, sfeats, tfeats):
+        assert len(sfeats) == len(tfeats), "Student and teacher feature counts do not match"
+        total_loss = 0.0
+        count = 0
+        for idx, (s_f, t_f) in enumerate(zip(sfeats, tfeats)):
+            if s_f is None or t_f is None:
+                print(f"[CWDLoss] Warning: s_f or t_f is None at index {idx}")
+                continue
+            total_loss += F.mse_loss(s_f, t_f.detach())
+            count += 1
+        if count == 0:
+            return torch.tensor(0.0, device=self.mcfg.device)
+        return total_loss / count
+    
+class ResponseLoss(nn.Module):
+    def __init__(self, device, nc, teacherClassIndexes, temperature=2.0):
+        self.device = device
+        self.nc = nc #总类别数
+        self.teacherClassIndexes = teacherClassIndexes
+        self.T = temperature
+        
+    def __call__(self, sresponse, tresponse):
+        total_loss = 0.0
+        count = 0
+        for s_out, t_out in zip(sresponse, tresponse):
+            if s_out is None or t_out is None:
+                continue
+            # 取出类别部分
+            s_cls = s_out[:, -self.nc:, :, :]
+            t_cls = t_out[:, -self.nc:, :, :]
+            # 只对指定类别做蒸馏
+            s_cls = s_cls[:, self.teacherClassIndexes, :, :]
+            t_cls = t_cls[:, self.teacherClassIndexes, :, :]
+            
+            B, _, H, W = s_cls.shape
+            s_logits = s_cls.permute(0, 2, 3, 1).reshape(-1, self.nc)
+            t_logits = t_cls.permute(0, 2, 3, 1).reshape(-1, self.nc)
+            
+            # input​1​: 学生模型的​​对数概率​ soft_students_log_probs
+            # input2: 教师模型的​​概率 ​soft_teachers_probs
+            soft_students_log_probs = F.log_softmax(s_logits / self.T, dim=-1)
+            soft_teachers_probs = (t_logits.detach() / self.T).softmax(dim=-1)
+            
+            kl_loss_pair = F.kl_div(soft_students_log_probs, soft_teachers_probs, reduction='batchmean') * (self.T * self.T)
+            
+            total_loss += kl_loss_pair
+            count += 1
+        if count == 0:
+            return torch.tensor(0.0, device=self.device)
+        return total_loss / count

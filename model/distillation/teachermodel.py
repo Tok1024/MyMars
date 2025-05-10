@@ -1,6 +1,6 @@
 import torch
 from model.base.yolomodel import YoloModel
-from overrides import override # this could be removed since Python 3.12
+# from overrides import override # this could be removed since Python 3.12
 
 
 class YoloTeacherModel(YoloModel):
@@ -8,7 +8,7 @@ class YoloTeacherModel(YoloModel):
         super().__init__(mcfg)
         self.eval()
 
-    @override
+    # @override
     def forward(self, x):
         with torch.no_grad():
             feat0, feat1, feat2, feat3 = self.backbone.forward(x)

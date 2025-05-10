@@ -1,6 +1,6 @@
 import torch
 from misc.log import log
-from overrides import override # this could be removed since Python 3.12
+# from overrides import override # this could be removed since Python 3.12
 from model.base.yolomodel import YoloModel
 from model.distillation.teachermodel import YoloTeacherModel
 
@@ -17,7 +17,7 @@ class YoloStudentModel(YoloModel):
         from train.distilloss import DistillationDetectionLoss
         return DistillationDetectionLoss(self.mcfg, self)
 
-    @override
+    # @override
     def forward(self, x):
         if self.inferenceMode:
             with torch.no_grad():
@@ -32,7 +32,7 @@ class YoloStudentModel(YoloModel):
         tlayerOutput = self.teacherModel.forward(x)
         return (xo, yo, zo, feat0, feat1, feat2, feat3, C, X, Y, Z), tlayerOutput
 
-    @override
+    # @override
     def load(self, modelFile):
         """
         Load states except "self.teacherModel"
