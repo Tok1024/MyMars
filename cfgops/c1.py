@@ -45,5 +45,11 @@ def mcfg(tags):
         mcfg.epochValidation = False # DO NOT MODIFY
         mcfg.trainSplitName = "small" # DO NOT MODIFY
         mcfg.teacherClassIndexes = [x for x in range(0, 10)] # DO NOT MODIFY
+        
+    if "swin" in tags:
+        mcfg.modelName = "base"
+        mcfg.maxEpoch = 200
+        mcfg.backboneFreezeEpochs = [x for x in range(0, 100)]
+        mcfg.swinbackbone = True  # replace yolov8 backbone
 
     return mcfg
