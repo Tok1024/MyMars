@@ -192,6 +192,7 @@ class ResponseLoss(nn.Module):
             soft_students_log_probs = F.log_softmax(s_logits / self.T, dim=-1)
             soft_teachers_probs = (t_logits.detach() / self.T).softmax(dim=-1)
             
+
             kl_loss_pair = F.kl_div(soft_students_log_probs, soft_teachers_probs, reduction='batchmean') * (self.T * self.T)
             
             total_loss += kl_loss_pair
