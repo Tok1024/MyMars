@@ -187,8 +187,12 @@ class ResponseLoss(nn.Module):
             s_logits = s_cls.permute(0, 2, 3, 1).reshape(-1, self.nc)
             t_logits = t_cls.permute(0, 2, 3, 1).reshape(-1, self.nc)
             
+            # input​1​: 学生模型的​​对数概率​ soft_students_log_probs
+            # input2: 教师模型的​​概率 ​soft_teachers_probs
             soft_students_log_probs = F.log_softmax(s_logits / self.T, dim=-1)
             soft_teachers_probs = (t_logits.detach() / self.T).softmax(dim=-1)
+            
+
             kl_loss_pair = F.kl_div(soft_students_log_probs, soft_teachers_probs, reduction='batchmean') * (self.T * self.T)
             
             total_loss += kl_loss_pair

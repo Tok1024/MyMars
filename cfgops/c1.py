@@ -42,13 +42,27 @@ def mcfg(tags):
 
     if "distillation" in tags:
         mcfg.modelName = "distillation"
-        mcfg.checkpointModelFile = f"{mcfg.root}/c1.nano.teacher/__cache__/best_weights.pth"
-        mcfg.teacherModelFile = f"{mcfg.root}/c1.nano.teacher/__cache__/best_weights.pth"
+
+        mcfg.checkpointModelFile = "D:/ML_Project/Mars/Noire/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.teacherModelFile = "D:/ML_Project/Mars/Noire/c1.nano.teacher/__cache__/best_weights.pth"
+
         mcfg.distilLossWeights = (1.0, 0.05, 0.001)
         mcfg.maxEpoch = 100
         mcfg.backboneFreezeEpochs = [x for x in range(0, 25)]
         mcfg.epochValidation = False # DO NOT MODIFY
         mcfg.trainSplitName = "small" # DO NOT MODIFY
         mcfg.teacherClassIndexes = [x for x in range(0, 10)] # DO NOT MODIFY
+        
+    if "swin" in tags:
+        mcfg.modelName = "base"
+        mcfg.maxEpoch = 200
+        mcfg.backboneFreezeEpochs = [x for x in range(0, 100)]
+        mcfg.swin = True  # replace yolov8 backbone
+    
+    if "swinbackbone" in tags:
+        mcfg.modelName = "base"
+        mcfg.maxEpoch = 300
+        mcfg.backboneFreezeEpochs = [x for x in range(0, 100)]
+        mcfg.swinbackbone = True  # replace yolov8 backbone
 
     return mcfg

@@ -1,6 +1,7 @@
 import torch
-from overrides import override # this could be removed since Python 3.12
+# from overrides import override # this could be removed since Python 3.12
 from train.loss import DetectionLoss, CWDLoss, ResponseLoss
+
 
 class DistillationDetectionLoss(object):
     def __init__(self, mcfg, model):
@@ -9,19 +10,21 @@ class DistillationDetectionLoss(object):
         self.detectionLoss = DetectionLoss(mcfg, model)
         self.cwdLoss = CWDLoss(self.mcfg.device)
         self.respLoss = ResponseLoss(self.mcfg.device, self.mcfg.nc, self.mcfg.teacherClassIndexes, temperature=2.1)
-        #raise NotImplementedError("DistillationDetectionLoss::__init__")
 
-    @override
+
+    # @override
     def __call__(self, rawPreds, batch):
         """
         rawPreds[0] & rawPreds[1] shape: (
             (B, regMax * 4 + nc, 80, 80),
             (B, regMax * 4 + nc, 40, 40),
             (B, regMax * 4 + nc, 20, 20),
+            
             (B, 128 * w, 160, 160),
             (B, 256 * w, 80, 80),
             (B, 512 * w, 40, 40),
             (B, 512 * w * r, 20, 20),
+            
             (B, 512 * w, 40, 40),
             (B, 256 * w, 80, 80),
             (B, 512 * w, 40, 40),
