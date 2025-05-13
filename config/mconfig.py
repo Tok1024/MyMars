@@ -25,6 +25,7 @@ class ModelConfig(object):
         self.pretrainedBackboneUrl = None
         self.inputShape = (640, 640)
         self.regMax = 16
+        self.swin = False
         self.swinbackbone = False
 
         # distillation model setup

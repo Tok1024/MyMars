@@ -50,6 +50,12 @@ def mcfg(tags):
         mcfg.modelName = "base"
         mcfg.maxEpoch = 200
         mcfg.backboneFreezeEpochs = [x for x in range(0, 100)]
+        mcfg.swin = True  # replace yolov8 backbone
+    
+    if "swinbackbone" in tags:
+        mcfg.modelName = "base"
+        mcfg.maxEpoch = 300
+        mcfg.backboneFreezeEpochs = [x for x in range(0, 100)]
         mcfg.swinbackbone = True  # replace yolov8 backbone
 
     return mcfg
